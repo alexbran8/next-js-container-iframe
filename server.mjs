@@ -24,19 +24,6 @@ app.prepare().then(() => {
 
   server.use('/container.js', express.static(path.join(__dirname, 'container.js')));
 
-  // Exclude Next.js static files from being proxied (serve locally by Next.js server)
-  // server.use('/_next/static', express.static('.next/static'));
-
-//   // Proxy API requests or other backend routes (these should go to localhost:3001)
-//   server.use('/api', createProxyMiddleware({
-//     target: 'http://localhost:3001',  // Target backend server
-//     changeOrigin: true,
-//     pathRewrite: {
-//       '^/api': '',  // Optional: Rewrites the path for the proxy
-//     },
-//   }));
-
-  // Proxy other specific routes (e.g., /editor) to localhost:3001
   server.use(['/editor', '/_next', '*'], createProxyMiddleware({
     target: 'http://localhost:3000',
     changeOrigin: true,
