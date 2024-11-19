@@ -11,7 +11,6 @@ function trySetEditorConfig() {
     } catch (e) {
         setTimeout(trySetEditorConfig, 100);
     }
-    console.log(iframeWindow)
 }
 
 trySetEditorConfig()
