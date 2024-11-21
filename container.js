@@ -65,4 +65,16 @@ function trySetEditorConfig() {
     }
 }
 
-trySetEditorConfig()
+document.getElementById('editorFrame').addEventListener('load', function() {
+    console.log("Editor iframe loaded");
+    trySetEditorConfig();
+
+}
+)
+
+function listen() {
+    console.log('listening to messages sent from postMessage({})')
+    window.onmessage = (event) => {
+        console.log(`Received message: ${JSON.stringify(event.data)}`);
+      }; 
+}
