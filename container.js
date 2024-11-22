@@ -4,7 +4,7 @@ function trySetEditorConfig() {
 
     try {
         if (typeof iframeWindow.setEditorConfig === 'function') {
-            iframeWindow.eval("setEditorConfig({\"strikethrough\":false,\"enableDateParsing\":'emitDateDetectionEvent',\"scrollToBottomButtonVisibility\":\"visibleWhileEditorUnfocused\",\"placeholder\":\"\",\"styling\":{\"editorContainer\":{\"topPadding\":16,\"leadingPadding\":12,\"bottomPadding\":16,\"trailingPadding\":12},\"title\":{\"lineHeight\":24,\"fontSize\":22},\"orderedList\":{\"numberFontSize\":17},\"tasksList\":{\"checkMarkTopPadding\":0},\"inlineTag\":{\"fontSize\":16},\"body\":{\"lineHeight\":24,\"fontSize\":17},\"heading\":{\"lineHeight\":21,\"fontSize\":19},\"code\":{\"fontSize\":16}},\"allowEditing\":true,\"emitReturnKeypressEvent\":false,\"showInlineTags\":true,\"allowToggleKeyboard\":true,\"hideDragHandles\":true,\"toolbar\":{\"position\":\"hidden\",\"collapsed\":false,\"hideWhenNotEditing\":false},\"hideBubbleMenu\":true,\"debounceInSeconds\":0.5});");
+            iframeWindow.eval("setEditorConfig({\"strikethrough\":false,\"dateParsing\":'emitDateDetectionEvent',\"scrollToBottomButtonVisibility\":\"visibleWhileEditorUnfocused\",\"placeholder\":\"\",\"styling\":{\"editorContainer\":{\"topPadding\":16,\"leadingPadding\":12,\"bottomPadding\":16,\"trailingPadding\":12},\"title\":{\"lineHeight\":24,\"fontSize\":22},\"orderedList\":{\"numberFontSize\":17},\"tasksList\":{\"checkMarkTopPadding\":0},\"inlineTag\":{\"fontSize\":16},\"body\":{\"lineHeight\":24,\"fontSize\":17},\"heading\":{\"lineHeight\":21,\"fontSize\":19},\"code\":{\"fontSize\":16}},\"allowEditing\":true,\"emitReturnKeypressEvent\":false,\"showInlineTags\":true,\"allowToggleKeyboard\":true,\"hideDragHandles\":true,\"toolbar\":{\"position\":\"hidden\",\"collapsed\":false,\"hideWhenNotEditing\":false},\"hideBubbleMenu\":true,\"debounceInSeconds\":0.5});");
             console.log("Editor configuration loaded");
             iframeWindow.editor.commands.setContent(`
                 <p>
@@ -64,15 +64,53 @@ function trySetEditorConfig() {
         setTimeout(trySetEditorConfig, 100);
     }
 }
-
-document.getElementById('editorFrame').addEventListener('load', function() {
+document.getElementById('editorFrame').onload = function() {
     console.log("Editor iframe loaded");
-    trySetEditorConfig();
+    const iframeWindow = document.getElementById('editorFrame').contentWindow;
+    iframeWindow.webkit = {
+        messageHandlers: messageHandlers()
+      }
+}; 
 
-}
-)
-
-function listen() {
+function messageHandlers() {
+    if (typeof window === 'undefined') return null
+  
+    return {
+        editorEvent: {
+          postMessage: (message) => {
+            if (message == "requestConfig") {
+                trySetEditorConfig();
+            }
+          }
+        },
+        contentChange: {
+          postMessage: (message) => {
+            console.log(message)
+          }
+        },
+        linkEvent: {
+          postMessage: (message) => {
+            console.log('event', message.event, 'url', message.url)
+          }
+        },
+        scheduleParsedDate: {
+          postMessage: (message) => {
+            console.log('date', message.date, 'matchedString', message.matchedString)
+          }
+        },
+        taggingEvent: {
+          postMessage: (message) => {}
+        },
+        keypressEvent: {
+          postMessage: (message) => {}
+        },
+        activeContentStyling: {
+          postMessage: (message) => {}
+        }
+    }
+  }
+  
+  function listen() {
     console.log('listening to messages sent from postMessage({})')
     window.onmessage = (event) => {
         console.log(`Received message: ${JSON.stringify(event.data)}`);
